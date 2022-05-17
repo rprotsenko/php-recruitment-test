@@ -13,7 +13,6 @@
       "src/components.php"
     ],
     "classmap": [
-      "src/",
       "lib/"
     ]
   }
