@@ -49,6 +49,23 @@
             </div>
 
             <div class="padded">
+                <table class="table table-striped">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Hostname</th>
+                    </tr>
+                    <?php foreach ($this->getWebsites() as $website): /** @var \Snowdog\DevTest\Model\Website $website */ ?>
+                        <tr>
+                            <td><?= $website->getWebsiteId() ?></td>
+                            <td><a href="/website/<?= $website->getWebsiteId() ?>"><?= $website->getName() ?></a></td>
+                            <td><?= $website->getHostname() ?></td>
+                        </tr>
+                    <?php endforeach ?>
+                </table>
+            </div>
+
+            <div class="padded">
                 <form class="form-inline" method="post" action="/website">
                     <div class="form-group">
                         <label for="exampleInputName2">Name</label>
@@ -65,22 +82,7 @@
             </div>
 
 
-            <div class="padded">
-                <table class="table table-striped">
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Hostname</th>
-                    </tr>
-                    <?php foreach ($this->getWebsites() as $website): /** @var \Snowdog\DevTest\Model\Website $website */ ?>
-                        <tr>
-                            <td><?= $website->getWebsiteId() ?></td>
-                            <td><a href="/website/<?= $website->getWebsiteId() ?>"><?= $website->getName() ?></a></td>
-                            <td><?= $website->getHostname() ?></td>
-                        </tr>
-                    <?php endforeach ?>
-                </table>
-            </div>
+
         <?php endif ?>
     </div>
 
