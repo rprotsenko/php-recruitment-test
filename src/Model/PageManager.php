@@ -43,7 +43,7 @@ class PageManager
         $websiteId = (int)$website->getWebsiteId();
         /** @var \PDOStatement $statement */
         $statement = $this->database->prepare('UPDATE pages 
-                SET last_visit = CURRENT_TIMESTAMP 
+                SET last_visit = CURRENT_TIMESTAMP, visit_count = visit_count + 1
                 WHERE url = :url AND website_id = :website
         ');
 
@@ -51,5 +51,71 @@ class PageManager
         $statement->bindParam(':website', $websiteId, \PDO::PARAM_INT);
 
         return $statement->execute();
+    }
+
+    public function getTotalPagesByUser(User $user)
+    {
+        $userId = $user->getUserId();
+        if (!$userId) {
+            return null;
+        }
+
+        $query = $this->database->prepare("
+            SELECT COUNT(*) AS total_pages FROM pages as p
+            INNER JOIN websites as w ON w.website_id = p.website_id
+            WHERE w.user_id = :user
+        ");
+        $query->bindParam(':user', $userId, \PDO::PARAM_INT);
+        $query->execute();
+        return $query->fetchColumn();
+    }
+
+    public function getLeastVisitedPageByUser(User $user)
+    {
+        $userId = $user->getUserId();
+        if (!$userId) {
+            return null;
+        }
+
+        $query = $this->database->prepare("
+            SELECT p.* FROM pages as p
+            INNER JOIN websites as w ON w.website_id = p.website_id
+            WHERE w.user_id = :user AND p.visit_count = ( 
+                SELECT MIN(visit_count) FROM pages as p1
+                INNER JOIN websites as w1 ON w1.website_id = p1.website_id
+                WHERE w1.user_id = :user
+            )
+            ORDER BY page_id ASC  
+            LIMIT 1
+        ");
+        $query->bindParam(':user', $userId, \PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetchObject(Page::class);
+    }
+
+    public function getMostVisitedPageByUser(User $user)
+    {
+        $userId = $user->getUserId();
+        if (!$userId) {
+            return null;
+        }
+
+        $query = $this->database->prepare("
+            SELECT p.* FROM pages as p
+            INNER JOIN websites as w ON w.website_id = p.website_id
+            WHERE w.user_id = :user AND p.visit_count = ( 
+                SELECT MAX(visit_count) FROM pages as p1
+                INNER JOIN websites as w1 ON w1.website_id = p1.website_id
+                WHERE w1.user_id = :user
+            )
+            AND p.visit_count > 0
+            ORDER BY page_id DESC  
+            LIMIT 1
+        ");
+        $query->bindParam(':user', $userId, \PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetchObject(Page::class);
     }
 }

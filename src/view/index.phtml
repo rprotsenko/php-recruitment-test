@@ -31,6 +31,22 @@
         <h1>Cache Warmer</h1>
         <?php if ($this->user): ?>
             <p class="bg-success">Hello <?= $this->user->getDisplayName() ?>!</p>
+            <?php
+                $totalPages = $this->getTotalPages();
+                $leastVisitedPage = $this->getLeastVisitedPage();
+                $mostVisitedPage = $this->getMostVisitedPage();
+            ?>
+            <div class="padded">
+                <p>Total number of pages: <strong><?= (int)$totalPages ?></strong></p>
+
+                <?php if ($leastVisitedPage):  ?>
+                    <p>Least visited page: <strong> <?= 'http://' . $this->getWebsite($leastVisitedPage->getWebsiteId())->getHostname() . '/' . $leastVisitedPage->getUrl() ?> (<?= $leastVisitedPage->getVisitCount()?>)</strong></p>
+                <?php endif;?>
+
+                <?php if ($mostVisitedPage):  ?>
+                    <p>Most visited page: <strong> <?= 'http://' . $this->getWebsite($mostVisitedPage->getWebsiteId())->getHostname() . '/' . $mostVisitedPage->getUrl() ?> (<?= $mostVisitedPage->getVisitCount()?>)</strong></p>
+                <?php endif;?>
+            </div>
 
             <div class="padded">
                 <form class="form-inline" method="post" action="/website">
