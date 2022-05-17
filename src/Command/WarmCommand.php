@@ -31,8 +31,10 @@ class WarmCommand
 
             $resolver = new \Old_Legacy_CacheWarmer_Resolver_Method();
             $actor = new \Old_Legacy_CacheWarmer_Actor();
-            $actor->setActor(function ($hostname, $ip, $url) use ($output) {
+            $pageManager = $this->pageManager;
+            $actor->setActor(function ($hostname, $ip, $url) use ($output, $website, $pageManager) {
                 $output->writeln('Visited <info>http://' . $hostname . '/' . $url . '</info> via IP: <comment>' . $ip . '</comment>');
+                $pageManager->updateLastVisit($website, $url);
             });
             $warmer = new \Old_Legacy_CacheWarmer_Warmer();
             $warmer->setResolver($resolver);
