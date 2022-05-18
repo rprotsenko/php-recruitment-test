@@ -19,32 +19,86 @@ class VarnishManager
 
     public function getAllByUser(User $user)
     {
-        // TODO: add logic here
+        $userId = $user->getUserId();
+        /** @var \PDOStatement $query */
+        $query = $this->database->prepare('SELECT * FROM varnish WHERE user_id = :user');
+        $query->bindParam(':user', $userId, \PDO::PARAM_INT);
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_CLASS, Varnish::class);
     }
 
     public function getWebsites(Varnish $varnish)
     {
-        // TODO: add logic here
+        $varnishId = $varnish->getVarnishId();
+        if (!$varnishId) {
+            return [];
+        }
+
+        /** @var \PDOStatement $query */
+        $query = $this->database->prepare("
+            SELECT w.*
+            FROM websites AS w
+            INNER JOIN varnish_websites AS vw ON vw.website_id = w.website_id
+            WHERE vw.varnish_id = :varnish
+        ");
+
+        $query->bindParam(':varnish', $varnishId, \PDO::PARAM_INT);
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_CLASS, Website::class);
     }
 
     public function getByWebsite(Website $website)
     {
-        // TODO: add logic here
+        $websiteId = $website->getWebsiteId();
+        if (!$websiteId) {
+            return [];
+        }
+
+        /** @var \PDOStatement $query */
+        $query = $this->database->prepare("
+            SELECT v.*
+            FROM varnish AS v
+            INNER JOIN varnish_websites AS vw ON vw.varnish_id = v.varnish_id
+            WHERE vw.website_id = :website
+        ");
+        $query->bindParam(':website', $websiteId, \PDO::PARAM_INT);
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_CLASS, Varnish::class);
     }
 
     public function create(User $user, $ip)
     {
-        // TODO: add logic here
+        $userId = $user->getUserId();
+        /** @var \PDOStatement $statement */
+        $statement = $this->database->prepare('INSERT INTO varnish (ip, user_id) VALUES (:ip, :user)');
+        $statement->bindParam(':ip', $ip, \PDO::PARAM_STR);
+        $statement->bindParam(':user', $userId, \PDO::PARAM_INT);
+        $statement->execute();
+        return $this->database->lastInsertId();
     }
 
     public function link($varnish, $website)
     {
-        // TODO: add logic here
+        /** @var \PDOStatement $statement */
+        $statement = $this->database->prepare(
+            'INSERT INTO varnish_websites (varnish_id, website_id) VALUES (:varnish, :website)'
+        );
+        $statement->bindParam(':varnish', $varnish, \PDO::PARAM_INT);
+        $statement->bindParam(':website', $website, \PDO::PARAM_INT);
+        $statement->execute();
+        return $this->database->lastInsertId();
     }
 
     public function unlink($varnish, $website)
     {
-        // TODO: add logic here
+        /** @var \PDOStatement $statement */
+        $statement = $this->database->prepare(
+            'DELETE FROM varnish_websites WHERE varnish_id = :varnish AND website_id = :website'
+        );
+        $statement->bindParam(':varnish', $varnish, \PDO::PARAM_INT);
+        $statement->bindParam(':website', $website, \PDO::PARAM_INT);
+        $statement->execute();
+        return true;
     }
 
 }

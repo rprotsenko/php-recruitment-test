@@ -26,6 +26,27 @@ class CreateVarnishLinkAction
 
     public function execute()
     {
-        // TODO: add module logic here
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) {
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $responseText = '';
+            if (isset($data['varnishId'], $data['websiteId'], $data['action'])) {
+                switch ($data['action']) {
+                    case 'link':
+                        $this->varnishManager->link($data['varnishId'], $data['websiteId']);
+                        $responseText = 'Website with ID ' . $data['websiteId'] . ' successfully linked';
+                        break;
+                    case 'unlink':
+                        $this->varnishManager->unlink($data['varnishId'], $data['websiteId']);
+                        $responseText = 'Website with ID ' . $data['websiteId'] . ' successfully unlinked';
+                        break;
+                }
+            }
+            echo $responseText;
+            return;
+        }
+
+        header('Location: /');
     }
 }

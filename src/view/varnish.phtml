@@ -21,12 +21,14 @@
 <?php \Snowdog\DevTest\Component\Menu::getInstance()->render() ?>
 
 <div class="container">
-
-    <?php if (isset($_SESSION['flash'])): ?>
-        <p class="bg-info"><?= $_SESSION['flash'] ?></p>
-        <?php unset($_SESSION['flash']) ?>
-    <?php endif ?>
-
+    <?php
+    $flashMessage = '';
+    if (isset($_SESSION['flash'])) {
+        $flashMessage = $_SESSION['flash'];
+        unset($_SESSION['flash']);
+    }
+    ?>
+    <p class="bg-info" id="flash-message" <?php if (!$flashMessage): ?> style="display: none;" <?php endif?>><?= $flashMessage ?></p>
     <div>
 
         <div class="padded">
@@ -46,7 +48,7 @@
 
         <?php foreach ($this->getVarnishes() as $varnish): /** @var \Snowdog\DevTest\Model\Varnish $varnish */ ?>
             <?php $websiteIds = $this->getAssignedWebsiteIds($varnish) ?>
-            <h2><?= $varnish->getIP() ?></h2>
+            <h2><?= $varnish->getIp() ?></h2>
 
             <div class="padded">
                 <table class="table table-striped">
@@ -57,7 +59,7 @@
                     </tr>
                     <?php foreach ($this->getWebsites() as $website): /** @var \Snowdog\DevTest\Model\Website $website */ ?>
                         <tr>
-                            <td><input type="checkbox" <?= in_array($website->getWebsiteId(), $websiteIds) ? 'checked="checked"' : '' ?>/></td>
+                            <td><input onclick="linkWebsite(<?= $varnish->getVarnishId() ?>, <?= $website->getWebsiteId()?>, this)" type="checkbox" <?= in_array($website->getWebsiteId(), $websiteIds) ? 'checked="checked"' : '' ?>/></td>
                             <td><?= $website->getName() ?></td>
                             <td><?= $website->getHostname() ?></td>
                         </tr>
@@ -70,6 +72,40 @@
 
 </div><!-- /.container -->
 
+<script>
+    function linkWebsite(varnishId, websiteId, element) {
+        let flashMessage = document.getElementById('flash-message');
+        flashMessage.style.display = 'none';
+
+        let data = {
+            'varnishId': varnishId,
+            'websiteId': websiteId,
+            'action': element.checked ? 'link': 'unlink'
+        };
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', '/varnish-link', true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8')
+
+        xhr.onreadystatechange = function () {
+            const DONE = 4; // readyState 4 means the request is done.
+            const OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                if (xhr.status === OK) {
+                    flashMessage.innerHTML = xhr.responseText;
+                    flashMessage.style.display = 'block';
+                } else {
+                    flashMessage.innerHTML = 'Error: ' + xhr.status;
+                    flashMessage.style.display = 'block';
+                }
+            }
+        };
+        xhr.send(JSON.stringify(data));
+
+        return true;
+    }
+</script>
 
 </body>
 </html>
