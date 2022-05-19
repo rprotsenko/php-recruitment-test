@@ -1,5 +1,8 @@
 <?php
 
+use Snowdog\DevTest\Acl\AclRepository;
+use Snowdog\DevTest\Acl\Route\GuestRestrictedAction;
+use Snowdog\DevTest\Acl\Route\UserRestrictedAction;
 use Snowdog\DevTest\Command\MigrateCommand;
 use Snowdog\DevTest\Command\WarmCommand;
 use Snowdog\DevTest\Component\CommandRepository;
@@ -45,3 +48,17 @@ Menu::register(VarnishMenu::class, 20);
 Menu::register(WebsitesMenu::class, 10);
 
 Migrations::registerComponentMigration('Snowdog\\DevTest', 5);
+
+AclRepository::registryContextRoute('guest', GuestRestrictedAction::class, 'execute');
+AclRepository::registryContextRoute('user', UserRestrictedAction::class, 'execute');
+
+AclRepository::registryRestrictedRoute('/login', 'user');
+AclRepository::registryRestrictedRoute('/register', 'user');
+
+AclRepository::registryRestrictedRoute('/logout', 'guest');
+AclRepository::registryRestrictedRoute('/website/\d+', 'guest');
+AclRepository::registryRestrictedRoute('/website', 'guest');
+AclRepository::registryRestrictedRoute('/page', 'guest');
+AclRepository::registryRestrictedRoute('/varnish', 'guest');
+AclRepository::registryRestrictedRoute('/varnish-link', 'guest');
+AclRepository::registryRestrictedRoute('/import', 'guest');

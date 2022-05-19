@@ -1,5 +1,7 @@
 <?php
 
+use Snowdog\DevTest\Acl\AclRepository;
+use Snowdog\DevTest\Acl\Route\AclDispatcher;
 use Snowdog\DevTest\Component\Menu;
 use Snowdog\DevTest\Component\RouteRepository;
 
@@ -11,9 +13,13 @@ $routeRepository = RouteRepository::getInstance();
 
 $dispatcher = \FastRoute\simpleDispatcher($routeRepository);
 
+$aclRepository = AclRepository::getInstance();
+
+$aclDispatcher = new AclDispatcher($dispatcher, $aclRepository);
+
 Menu::setContainer($container);
 
-$route = $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+$route = $aclDispatcher->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 switch ($route[0]) {
     case FastRoute\Dispatcher::NOT_FOUND:
         header("HTTP/1.0 404 Not Found");
