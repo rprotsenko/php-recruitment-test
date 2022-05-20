@@ -4,7 +4,7 @@ namespace Snowdog\DevTest\Model;
 
 use Snowdog\DevTest\Core\Database;
 
-class PageManager
+    class PageManager
 {
 
     /**
@@ -80,12 +80,8 @@ class PageManager
         $query = $this->database->prepare("
             SELECT p.* FROM pages as p
             INNER JOIN websites as w ON w.website_id = p.website_id
-            WHERE w.user_id = :user AND p.visit_count = ( 
-                SELECT MIN(visit_count) FROM pages as p1
-                INNER JOIN websites as w1 ON w1.website_id = p1.website_id
-                WHERE w1.user_id = :user
-            )
-            ORDER BY page_id ASC  
+            WHERE w.user_id = :user 
+            ORDER BY p.visit_count
             LIMIT 1
         ");
         $query->bindParam(':user', $userId, \PDO::PARAM_INT);
@@ -104,13 +100,9 @@ class PageManager
         $query = $this->database->prepare("
             SELECT p.* FROM pages as p
             INNER JOIN websites as w ON w.website_id = p.website_id
-            WHERE w.user_id = :user AND p.visit_count = ( 
-                SELECT MAX(visit_count) FROM pages as p1
-                INNER JOIN websites as w1 ON w1.website_id = p1.website_id
-                WHERE w1.user_id = :user
-            )
+            WHERE w.user_id = :user 
             AND p.visit_count > 0
-            ORDER BY page_id DESC  
+            ORDER BY p.visit_count DESC
             LIMIT 1
         ");
         $query->bindParam(':user', $userId, \PDO::PARAM_INT);
