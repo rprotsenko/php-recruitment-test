@@ -77,26 +77,33 @@ class VarnishManager
         return $this->database->lastInsertId();
     }
 
-    public function link($varnish, $website)
+    public function link($varnishId, $websiteId)
     {
+        if (!$varnishId || !$websiteId) {
+            return false;
+        }
         /** @var \PDOStatement $statement */
         $statement = $this->database->prepare(
             'INSERT INTO varnish_websites (varnish_id, website_id) VALUES (:varnish, :website)'
         );
-        $statement->bindParam(':varnish', $varnish, \PDO::PARAM_INT);
-        $statement->bindParam(':website', $website, \PDO::PARAM_INT);
+        $statement->bindParam(':varnish', $varnishId, \PDO::PARAM_INT);
+        $statement->bindParam(':website', $websiteId, \PDO::PARAM_INT);
         $statement->execute();
         return $this->database->lastInsertId();
     }
 
-    public function unlink($varnish, $website)
+    public function unlink($varnishId, $websiteId)
     {
+        if (!$varnishId || !$websiteId) {
+            return false;
+        }
+
         /** @var \PDOStatement $statement */
         $statement = $this->database->prepare(
             'DELETE FROM varnish_websites WHERE varnish_id = :varnish AND website_id = :website'
         );
-        $statement->bindParam(':varnish', $varnish, \PDO::PARAM_INT);
-        $statement->bindParam(':website', $website, \PDO::PARAM_INT);
+        $statement->bindParam(':varnish', $varnishId, \PDO::PARAM_INT);
+        $statement->bindParam(':website', $websiteId, \PDO::PARAM_INT);
         $statement->execute();
         return true;
     }
